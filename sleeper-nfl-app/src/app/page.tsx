@@ -4,64 +4,55 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 
 type Player = {
-  player_id: string;
-  last_name: string;
-  first_name: string;
-  position: string;
-  team: string;
+  player_id: string,
+  full_name: string,
+  position: string
 }
 
 export default function Home() {
 
-  const [players, setPlayers] = useState<Player[] | null>(null)
-  const [searchPlayer, setSearchPlayer] = useState("")
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [findPlayer, setFindPlayer] = useState("");
 
   useEffect(() => {
     async function fetchApi() {
       try {
-        const req = await axios.get("https://api.sleeper.app/v1/players/nfl");
-        const allPlayers = Object.values(req.data) as Player[];
-        const mainPlayers = allPlayers.slice(0, 15);
-        setPlayers(mainPlayers)
+        const req = await axios.get("https://api.sleeper.app/v1/players/nfl")
+        const nflPlayers = Object.values(req.data) as Player[]
+        const fifteenPlayers = nflPlayers.slice(0, 15)
+        setPlayers(fifteenPlayers)
       } catch (error) {
-        console.error("Error loading", error);
+        console.error("Error to Load Api", error)
       }
     }
-    fetchApi();
+    fetchApi()
   }, [])
 
-  const filteredPlayers = players?.filter((player) => `${player.first_name} ${player.last_name}`.toLowerCase().includes(searchPlayer.toLowerCase())
-);
+  const searchPlayer = players.filter((e) => 
+    `${e.full_name}`.toLowerCase().includes(findPlayer.toLowerCase()))
 
   return (
     <>
     <input
-      type="text"
-      placeholder="enter a player"
-      value={searchPlayer}
-      onChange={(e) => setSearchPlayer(e.target.value)}
-     />
+    type="text"
+    placeholder="enter a player"
+    value={findPlayer}
+    onChange={(event) => setFindPlayer(event.target.value)}
+    />
       <table>
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Player</th>
             <th>Position</th>
-            <th>Team</th>
           </tr>
         </thead>
         <tbody>
-          {!players ?
-            <tr>
-              <td colSpan={3}>Loading..</td>
-            </tr> :
-            filteredPlayers?.map((player) => (
-              <tr key={player.player_id}>
-                <td>{player.first_name} {player.last_name}</td>
-                <td>{player.position || "N/A"}</td>
-                <td>{player.team || "Free Agent"}</td>
-              </tr>
-            ))
-          }
+          {searchPlayer.map((e) => (
+            <tr key={e.player_id}>
+              <td>{e.full_name}</td>
+              <td>{e.position}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </>
